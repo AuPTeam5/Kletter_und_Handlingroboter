@@ -16,6 +16,10 @@ void setup() {
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-	Serial.println("Senor1 = " + Sensor1.result());
-	Serial.println("Senor2 = " + Sensor2.result());
+	Serial.print("Sensor1 = ");
+	Serial.println(Sensor1.result());
+	delay(1000);
+	Serial.print("Sensor2 = ");
+	Serial.println(Sensor2.result());
+	delay(1000);
 }

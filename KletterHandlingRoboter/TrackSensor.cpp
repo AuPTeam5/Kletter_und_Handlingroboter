@@ -13,12 +13,12 @@ TrackSensor::TrackSensor(int pin){
 boolean TrackSensor::result() {
 	
 	// private
-	const long interval = 500;
+	const long timer = 500;
 	int mapvalue = 0;
 	unsigned long Reference = 0;
 	unsigned long CurrentTime = millis();
 
-	if ((CurrentTime - Reference) >= interval) {
+	if ((CurrentTime - Reference) >= timer ) {
 		mapvalue = map(analogRead(_pin), 0, 1024, 0, 100);
 		if (mapvalue <= 50) {
 			return true;
