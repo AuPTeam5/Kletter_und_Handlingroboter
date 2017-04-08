@@ -21,7 +21,6 @@ boolean TrackSensor::result() {
 	unsigned long CurrentTime = millis();
 
 	if ((CurrentTime - Reference) >= timer ) {
-		Reference = CurrentTime;
 		for (int i = 0; i <= 9; i++) {
 			average += analogRead(_pin);
 		}
@@ -31,6 +30,7 @@ boolean TrackSensor::result() {
 		}
 		else {
 			return false;
-		}		
+		}	
+		Reference = CurrentTime;
 	}
 }
