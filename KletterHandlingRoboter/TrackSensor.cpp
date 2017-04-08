@@ -14,7 +14,7 @@ TrackSensor::TrackSensor(int pin){
 boolean TrackSensor::result() {
 	
 	// private
-	const long timer = 50;
+	const long timer = 20;
 	int mapvalue = 0;
 	unsigned long average = 0;
 	unsigned long Reference = 0;
