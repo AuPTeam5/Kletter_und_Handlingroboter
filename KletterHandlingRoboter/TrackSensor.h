@@ -15,7 +15,7 @@ class TrackSensor {
 
 	private:
 		int _pin;
-		const long timer;
+		long timer;
 		int mapvalue;
 		unsigned long average;
 		unsigned long Reference;
