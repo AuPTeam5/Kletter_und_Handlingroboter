@@ -13,7 +13,7 @@ TrackSensor::TrackSensor(int pin){
 
 boolean TrackSensor::result() {
 	
-	// private
+
 	int timer = 20;
 	int mapvalue = 0;
 	unsigned long average = 0;
