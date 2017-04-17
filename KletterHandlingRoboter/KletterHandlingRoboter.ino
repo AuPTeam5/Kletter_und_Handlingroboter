@@ -11,6 +11,7 @@
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x60);
 Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
+Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
 TrackSensor Sensor1(0);
 TrackSensor Sensor2(1);
 
@@ -29,13 +30,18 @@ void loop() {
 	Serial.println(Sensor2.result());
 	delay(1000);
 	if (! Sensor1.result()){
-		stepper(1000, 1000, FORWARD, DOUBLE);		
+		stepper1(1000, 1000, FORWARD, DOUBLE);		
 	}
 }
 
 
-// stepper controll
-void stepper(int speed, int stepps, uint8_t direction, uint8_t steptype) {
+// stepper controll 1
+void stepper1(int speed, int stepps, uint8_t direction, uint8_t steptype) {
 	Stepper1->setSpeed(speed);
 	Stepper1->step(stepps, direction, steptype);
+}
+// stepper controll 2
+void stepper2(int speed, int stepps, uint8_t direction, uint8_t steptype) {
+	Stepper2->setSpeed(speed);
+	Stepper2->step(stepps, direction, steptype);
 }
