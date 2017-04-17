@@ -14,14 +14,13 @@ TrackSensor::TrackSensor(int pin){
 boolean TrackSensor::result() {
 	
 	// private
-	long timer = 20;
+	int timer = 20;
 	int mapvalue = 0;
 	unsigned long average = 0;
 	unsigned long Reference = 0;
 	unsigned long CurrentTime = millis();
 
 	if ((CurrentTime - Reference) >= timer ) {
-		Reference = CurrentTime;
 		for (int i = 0; i <= 9; i++) {
 			average += analogRead(_pin);
 		}
@@ -31,6 +30,7 @@ boolean TrackSensor::result() {
 		}
 		else {
 			return false;
-		}		
+		}	
+		Reference = CurrentTime;
 	}
 }
