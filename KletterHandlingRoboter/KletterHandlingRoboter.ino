@@ -50,19 +50,22 @@ void setup() {
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-	/*
+	
 	Serial.print("Sensor1 = ");
 	Serial.println(Sensor1.result());
-	delay(1000);
+	
 	Serial.print("Sensor2 = ");
 	Serial.println(Sensor2.result());
-	delay(1000);
+	
 	
 	if (! Sensor1.result()){
 		stepper1.runSpeed();
 
 	}
-	*/
+	
 
-	GripperServo.write(100);
+	GripperServo.writeMicroseconds(1000);
+	delay(2000);
+	GripperServo.writeMicroseconds(1500);
+	delay(2000);
 }
