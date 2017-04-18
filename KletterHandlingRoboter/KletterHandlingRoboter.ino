@@ -20,10 +20,10 @@ Servo GripperServo;
 
 // wrappers for the first motor!
 void forwardstep1() {
-	StepperDrive1->onestep(FORWARD, DOUBLE);
+	StepperDrive1->onestep(FORWARD, SINGLE);
 }
 void backwardstep1() {
-	StepperDrive1->onestep(BACKWARD, DOUBLE);
+	StepperDrive1->onestep(BACKWARD, SINGLE);
 }
 // wrappers for the second motor!
 void forwardstep2() {
@@ -45,27 +45,32 @@ void setup() {
 	stepper2.setMaxSpeed(200.0);
 	stepper2.setAcceleration(100.0);
 
-	GripperServo.attach(9);
+
+	GripperServo.attach(2);
 }
 
 // the loop function runs over and over again until power down or reset
 void loop() {
 	
+	/*
 	Serial.print("Sensor1 = ");
 	Serial.println(Sensor1.result());
 	
 	Serial.print("Sensor2 = ");
 	Serial.println(Sensor2.result());
+	*/
 	
-	
-	if (! Sensor1.result()){
+	if (Sensor1.result()){
+		stepper1.setSpeed(200);
 		stepper1.runSpeed();
-
 	}
+
 	
 
-	GripperServo.writeMicroseconds(1000);
+	
+
+	GripperServo.writeMicroseconds(500);
 	delay(2000);
-	GripperServo.writeMicroseconds(1500);
+	GripperServo.writeMicroseconds(2500);
 	delay(2000);
 }
