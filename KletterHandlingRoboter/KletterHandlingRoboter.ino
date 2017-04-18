@@ -66,7 +66,7 @@ void loop() {
 	}
 
 	
-
+	//test
 	
 
 	GripperServo.writeMicroseconds(500);
