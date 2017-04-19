@@ -32,8 +32,24 @@ const double
 
 // enum
 enum state {								// enumeration for sequencer
-	init	= 0,
-	end		= 100
+	start,
+	move_to_pipe_bottom,
+	grip_pipe_bottom,
+	drag_pipe_out_bottom,
+	move_arm_in_transport_pos_to_top,
+	move_to_top,
+	move_arm_to_release_pos_top,
+	release_pipe_top,
+	move_to_center,
+	wait_5s,
+	move_to_pipe_top,
+	grip_pipe_top,
+	drag_pipe_out_top,
+	move_arm_in_transport_pos_to_bottom,
+	move_to_bottom,
+	release_pipe_bottom,
+	move_to_endpos,
+	end
 };
 
 // objects
@@ -71,7 +87,87 @@ void MainSequence(int sequencer) {
 	switch (sequencer){
 
 	// init
-	case state(init):
+	case state(start):
+
+		break;
+
+	// move to pipe bottom position
+	case state(move_to_pipe_bottom):
+
+		break;
+
+	// close gripper bottom pos
+	case state(grip_pipe_bottom):
+
+		break;
+		
+	// move pipe out bottom
+	case state(drag_pipe_out_bottom):
+
+		break;
+
+	// pepare arm for move to top
+	case state(move_arm_in_transport_pos_to_top):
+
+		break;
+
+	// move to top position
+	case state(move_to_top):
+
+		break;
+
+	// move arm in release position on top
+	case state(move_arm_to_release_pos_top):
+
+		break;
+
+	// open gripper
+	case state(release_pipe_top):
+
+		break;
+
+	// move to center
+	case state(move_to_center):
+
+		break;
+
+	// wait 5s
+	case state(wait_5s):
+
+		break;
+
+	// move to pipe top position
+	case state(move_to_pipe_top):
+
+		break;
+
+	// close gripper on top pos
+	case state(grip_pipe_top):
+
+		break;
+
+	// move pipe out top
+	case state(drag_pipe_out_top):
+
+		break;
+
+	// move arm in transport pposition to bottom
+	case state(move_arm_in_transport_pos_to_bottom):
+
+		break;
+
+	// move to bottom
+	case state(move_to_bottom):
+
+		break;
+
+	// open gripper
+	case state(release_pipe_bottom):
+
+		break;
+
+	// move to endposition
+	case state(move_to_endpos):
 
 		break;
 
@@ -82,7 +178,7 @@ void MainSequence(int sequencer) {
 
 	// reset by programm bug
 	default:
-		sequencer = state(init);
+		sequencer = state(start);
 		break;
 	}
 
@@ -111,6 +207,9 @@ void setup() {
 // loop
 void loop() {
 	
+	// call functions
+	void MainSequence();
+
 	/*
 	Serial.print("SensorFront = ");
 	Serial.println(SensorFront.result());
