@@ -16,10 +16,18 @@
 
 // const int
 const int	
-	RxPin			= 2,					// pin for IR reciver
-	SensorFrontPin	= 0,					// pin for front sensor
-	SensorCenterPin = 1,					// pin for center sensor
-	SensorBackPin	= 2						// pin for back sensor
+	RxPin				= 2,				// pin for IR reciver
+	SensorFrontPin		= 0,				// pin for front sensor
+	SensorCenterPin		= 1,				// pin for center sensor
+	SensorBackPin		= 2,				// pin for back sensor
+	ShieldAdress		= 0X60				// motor shield adress
+;
+
+// const long
+const double
+	Stepper1Resolution	= 1.8,				// degree per step
+	Stepper1MaxSpeed	= 200.0,			// max speed for stepper 1
+	Stepper1Accl		= 100.0				// acceleration for stepper 1
 ;
 
 // enum
@@ -31,11 +39,9 @@ enum state {								// enumeration for sequencer
 // objects
 /////////////////////////////////////////////////////////////////////
 
-Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x60);
-Adafruit_StepperMotor *StepperDrive1 = AFMS.getStepper(200, 1);
-Adafruit_StepperMotor *StepperDrive2 = AFMS.getStepper(200, 2);
+Adafruit_MotorShield AFMS = Adafruit_MotorShield(ShieldAdress);
+Adafruit_StepperMotor *StepperDrive1 = AFMS.getStepper((360 / Stepper1Resolution), 1);
 AccelStepper stepper1(forwardstep1, backwardstep1);
-AccelStepper stepper2(forwardstep2, backwardstep2);
 
 TrackSensor SensorFront(SensorFrontPin);
 TrackSensor SensorCenter(SensorCenterPin);
@@ -56,13 +62,6 @@ void forwardstep1() {
 }
 void backwardstep1() {
 	StepperDrive1->onestep(BACKWARD, SINGLE);
-}
-// wrappers for the second motor!
-void forwardstep2() {
-	StepperDrive2->onestep(FORWARD, DOUBLE);
-}
-void backwardstep2() {
-	StepperDrive2->onestep(BACKWARD, DOUBLE);
 }
 
 // main sequencer
@@ -97,14 +96,13 @@ void setup() {
 	Serial.begin(9600);							// start serial communication
 	
 	AFMS.begin();								// start motor shield
-	stepper1.setMaxSpeed(200.0);				// set max speed for stepper 1	
-	stepper1.setAcceleration(100.0);			// set acceleration for stepper 1
-	stepper2.setMaxSpeed(200.0);				// set max speed for stepper 2
-	stepper2.setAcceleration(100.0);			// set acceleration for stepper 2
+	stepper1.setMaxSpeed(Stepper1MaxSpeed);		// set max speed for stepper 1	
+	stepper1.setAcceleration(Stepper1Accl);		// set acceleration for stepper 1
 
 	Remote.enableIRIn();						// start the receiver
 
-	GripperServo.attach(2);
+	GripperServo.attach(2);						// attach GripperServo to pin 2
+	ArmServo.attach(3);							// attach ArmServo to pin 3
 
 	MainSequence(0);							// set sequence to init
 
