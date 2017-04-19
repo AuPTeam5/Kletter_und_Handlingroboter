@@ -4,10 +4,12 @@
  Author:	Florian Steiger, Kushtrim Thaqi, Matthias Stieger
 */
 
-#include <IRremote.h>
+// libary
+/////////////////////////////////////////////////////////////////////
+
 #include <Servo.h>
-#include <AccelStepper.h>
 #include <Adafruit_MotorShield.h>
+#include "utility/Adafruit_MS_PWMServoDriver.h"
 #include "TrackSensor.h"
 
 
@@ -16,18 +18,20 @@
 
 // const int
 const int	
-	RxPin				= 2,				// pin for IR reciver
 	SensorFrontPin		= 0,				// pin for front sensor
 	SensorCenterPin		= 1,				// pin for center sensor
 	SensorBackPin		= 2,				// pin for back sensor
-	ShieldAdress		= 0X60				// motor shield adress
+	ShieldAdress		= 0x60				// motor shield adress
+;
+
+// int
+int
+	sequencer			= 0					// main sequence						
 ;
 
 // const long
 const double
-	Stepper1Resolution	= 1.8,				// degree per step
-	Stepper1MaxSpeed	= 200.0,			// max speed for stepper 1
-	Stepper1Accl		= 100.0				// acceleration for stepper 1
+	Stepper1Resolution	= 1.8				// degree per step
 ;
 
 // enum
@@ -56,8 +60,7 @@ enum state {								// enumeration for sequencer
 /////////////////////////////////////////////////////////////////////
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(ShieldAdress);
-Adafruit_StepperMotor *StepperDrive1 = AFMS.getStepper((360 / Stepper1Resolution), 1);
-AccelStepper stepper1(forwardstep1, backwardstep1);
+Adafruit_StepperMotor *stepper1 = AFMS.getStepper((360 / Stepper1Resolution), 1);
 
 TrackSensor SensorFront(SensorFrontPin);
 TrackSensor SensorCenter(SensorCenterPin);
@@ -66,22 +69,11 @@ TrackSensor SensorBack(SensorBackPin);
 Servo GripperServo;
 Servo ArmServo;
 
-IRrecv Remote(RxPin);
-decode_results IRResults;
-
 // functions
 /////////////////////////////////////////////////////////////////////
 
-// wrappers for the first motor!
-void forwardstep1() {
-	StepperDrive1->onestep(FORWARD, SINGLE);
-}
-void backwardstep1() {
-	StepperDrive1->onestep(BACKWARD, SINGLE);
-}
-
 // main sequencer
-void MainSequence(int sequencer) {
+void MainSequence() {
 
 	// sequence
 	switch (sequencer){
@@ -184,6 +176,10 @@ void MainSequence(int sequencer) {
 
 };
 
+// outputs
+void Outputs(){
+};
+
 // main programm
 /////////////////////////////////////////////////////////////////////
 
@@ -192,15 +188,11 @@ void setup() {
 	Serial.begin(9600);							// start serial communication
 	
 	AFMS.begin();								// start motor shield
-	stepper1.setMaxSpeed(Stepper1MaxSpeed);		// set max speed for stepper 1	
-	stepper1.setAcceleration(Stepper1Accl);		// set acceleration for stepper 1
-
-	Remote.enableIRIn();						// start the receiver
 
 	GripperServo.attach(2);						// attach GripperServo to pin 2
 	ArmServo.attach(3);							// attach ArmServo to pin 3
 
-	MainSequence(0);							// set sequence to init
+	sequencer = 0;								// set sequence to init
 
 }
 
@@ -208,7 +200,8 @@ void setup() {
 void loop() {
 	
 	// call functions
-	void MainSequence();
+	void MainSequence();						// main controll sequence
+	void Outputs();								// outputs
 
 	/*
 	Serial.print("SensorFront = ");
@@ -216,14 +209,10 @@ void loop() {
 	*/
 	
 	if (SensorFront.result()){
-		stepper1.setSpeed(200);
-		stepper1.runSpeed();
+		stepper1->onestep(FORWARD, DOUBLE);
 	}
 
-	ArmServo.writeMicroseconds(500);
-	GripperServo.writeMicroseconds(1010);
-	delay(2000);
-	ArmServo.writeMicroseconds(2500);
-	GripperServo.writeMicroseconds(1100);
-	delay(2000);
+	ArmServo.writeMicroseconds(910);
+	
+
 }
