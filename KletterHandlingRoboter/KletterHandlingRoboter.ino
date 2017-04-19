@@ -206,13 +206,13 @@ void loop() {
 	/*
 	Serial.print("SensorFront = ");
 	Serial.println(SensorFront.result());
-	*/
+	
 	
 	if (SensorFront.result()){
 		stepper1->onestep(FORWARD, DOUBLE);
 	}
 
 	ArmServo.writeMicroseconds(910);
-	
+	*/
 
 }
