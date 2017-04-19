@@ -4,19 +4,51 @@
  Author:	Florian Steiger, Kushtrim Thaqi, Matthias Stieger
 */
 
+#include <IRremote.h>
 #include <Servo.h>
 #include <AccelStepper.h>
 #include <Adafruit_MotorShield.h>
 #include "TrackSensor.h"
 
+
+// variables
+/////////////////////////////////////////////////////////////////////
+
+// const int
+const int	
+	RxPin			= 2,					// pin for IR reciver
+	SensorFrontPin	= 0,					// pin for front sensor
+	SensorCenterPin = 1,					// pin for center sensor
+	SensorBackPin	= 2						// pin for back sensor
+;
+
+// enum
+enum state {								// enumeration for sequencer
+	init	= 0,
+	end		= 100
+};
+
+// objects
+/////////////////////////////////////////////////////////////////////
+
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x60);
 Adafruit_StepperMotor *StepperDrive1 = AFMS.getStepper(200, 1);
 Adafruit_StepperMotor *StepperDrive2 = AFMS.getStepper(200, 2);
+AccelStepper stepper1(forwardstep1, backwardstep1);
+AccelStepper stepper2(forwardstep2, backwardstep2);
 
-TrackSensor Sensor1(0);
-TrackSensor Sensor2(1);
+TrackSensor SensorFront(SensorFrontPin);
+TrackSensor SensorCenter(SensorCenterPin);
+TrackSensor SensorBack(SensorBackPin);
 
 Servo GripperServo;
+Servo ArmServo;
+
+IRrecv Remote(RxPin);
+decode_results IRResults;
+
+// functions
+/////////////////////////////////////////////////////////////////////
 
 // wrappers for the first motor!
 void forwardstep1() {
@@ -32,45 +64,69 @@ void forwardstep2() {
 void backwardstep2() {
 	StepperDrive2->onestep(BACKWARD, DOUBLE);
 }
-AccelStepper stepper1(forwardstep1, backwardstep1);
-AccelStepper stepper2(forwardstep2, backwardstep2);
 
-// the setup function runs once when you press reset or power the board
+// main sequencer
+void MainSequence(int sequencer) {
+
+	// sequence
+	switch (sequencer){
+
+	// init
+	case state(init):
+
+		break;
+
+	// end
+	case state(end):
+
+		break;
+
+	// reset by programm bug
+	default:
+		sequencer = state(init);
+		break;
+	}
+
+};
+
+// main programm
+/////////////////////////////////////////////////////////////////////
+
+// setup
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(9600);							// start serial communication
 	
-	AFMS.begin();
-	stepper1.setMaxSpeed(200.0);
-	stepper1.setAcceleration(100.0);
-	stepper2.setMaxSpeed(200.0);
-	stepper2.setAcceleration(100.0);
+	AFMS.begin();								// start motor shield
+	stepper1.setMaxSpeed(200.0);				// set max speed for stepper 1	
+	stepper1.setAcceleration(100.0);			// set acceleration for stepper 1
+	stepper2.setMaxSpeed(200.0);				// set max speed for stepper 2
+	stepper2.setAcceleration(100.0);			// set acceleration for stepper 2
 
+	Remote.enableIRIn();						// start the receiver
 
 	GripperServo.attach(2);
+
+	MainSequence(0);							// set sequence to init
+
 }
 
-// the loop function runs over and over again until power down or reset
+// loop
 void loop() {
 	
 	/*
-	Serial.print("Sensor1 = ");
-	Serial.println(Sensor1.result());
-	
-	Serial.print("Sensor2 = ");
-	Serial.println(Sensor2.result());
+	Serial.print("SensorFront = ");
+	Serial.println(SensorFront.result());
 	*/
 	
-	if (Sensor1.result()){
+	if (SensorFront.result()){
 		stepper1.setSpeed(200);
 		stepper1.runSpeed();
 	}
 
-	
-	
-	
-
-	GripperServo.writeMicroseconds(500);
+	ArmServo.writeMicroseconds(500);
+	GripperServo.writeMicroseconds(1010);
 	delay(2000);
-	GripperServo.writeMicroseconds(2500);
+	ArmServo.writeMicroseconds(2500);
+	GripperServo.writeMicroseconds(1100);
 	delay(2000);
 }
