@@ -11,31 +11,31 @@
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 #include "TrackSensor.h"
+#include "iecTimer.h"
 
 
 // variables
 /////////////////////////////////////////////////////////////////////
 
 // const int
-const int	
-	SensorFrontPin		= 0,				// pin for front sensor
-	SensorCenterPin		= 1,				// pin for center sensor
-	SensorBackPin		= 2,				// pin for back sensor
-	ShieldAdress		= 0x60				// motor shield adress
+const int
+	sn_SensorFrontPin = 0,				// pin for front sensor
+	sn_SensorCenterPin = 1,				// pin for center sensor
+	sn_SensorBackPin = 2,				// pin for back sensor
+	sn_GripperServoPin = 2,				// pin for gripper servo
+	sn_ArmServoPin = 3,					// pin for arm servo
+	sn_BaudRate = 9600,					// baud rate for serial communication
+	sn_ShieldAdress			= 0x60,		// motor shield adress
+	sn_StepperResolution	= 200		// steps / u ( 360° / 1.8° per step)
 ;
 
 // int
 int
-	sequencer			= 0					// main sequence						
-;
-
-// const long
-const double
-	Stepper1Resolution	= 1.8				// degree per step
+	sn_Sequencer			= 0			// main sequence						
 ;
 
 // enum
-enum state {								// enumeration for sequencer
+enum e_State {							// enumeration for sequencer
 	start,
 	move_to_pipe_bottom,
 	grip_pipe_bottom,
@@ -59,12 +59,12 @@ enum state {								// enumeration for sequencer
 // objects
 /////////////////////////////////////////////////////////////////////
 
-Adafruit_MotorShield AFMS = Adafruit_MotorShield(ShieldAdress);
-Adafruit_StepperMotor *stepper1 = AFMS.getStepper((360 / Stepper1Resolution), 1);
+Adafruit_MotorShield AFMS = Adafruit_MotorShield(sn_ShieldAdress);
+Adafruit_StepperMotor *Stepper = AFMS.getStepper(sn_StepperResolution, 1);
 
-TrackSensor SensorFront(SensorFrontPin);
-TrackSensor SensorCenter(SensorCenterPin);
-TrackSensor SensorBack(SensorBackPin);
+TrackSensor SensorFront(sn_SensorFrontPin);
+TrackSensor SensorCenter(sn_SensorCenterPin);
+TrackSensor SensorBack(sn_SensorBackPin);
 
 Servo GripperServo;
 Servo ArmServo;
@@ -75,102 +75,128 @@ Servo ArmServo;
 // main sequencer
 void MainSequence() {
 
+	// variables
+	/////////////////////////////////////////////////////////////////////
+
+	// bool
+	bool
+		is_inTimer				= false,	// start input
+		is_outTimer				= false;	// timer out put
+
+	// unsignd long
+	unsigned long 
+		ul_PT					= 500,		// programmed time in [ms]
+		ul_ET					= 0;		// established time im [ms]
+
+
+	// objects
+	/////////////////////////////////////////////////////////////////////
+
+	Ton ton_Sequencer(&is_inTimer, &is_outTimer, &ul_PT, &ul_ET);
+
+	// start timer
+	/////////////////////////////////////////////////////////////////////
+
+	ton_Sequencer.run();					// activate timer
+
 	// sequence
-	switch (sequencer){
+	/////////////////////////////////////////////////////////////////////
+
+	switch (sn_Sequencer){
 
 	// init
-	case state(start):
+	case e_State(start):
 
 		break;
 
 	// move to pipe bottom position
-	case state(move_to_pipe_bottom):
+	case e_State(move_to_pipe_bottom):
 
 		break;
 
 	// close gripper bottom pos
-	case state(grip_pipe_bottom):
+	case e_State(grip_pipe_bottom):
 
 		break;
 		
 	// move pipe out bottom
-	case state(drag_pipe_out_bottom):
+	case e_State(drag_pipe_out_bottom):
 
 		break;
 
 	// pepare arm for move to top
-	case state(move_arm_in_transport_pos_to_top):
+	case e_State(move_arm_in_transport_pos_to_top):
 
 		break;
 
 	// move to top position
-	case state(move_to_top):
+	case e_State(move_to_top):
 
 		break;
 
 	// move arm in release position on top
-	case state(move_arm_to_release_pos_top):
+	case e_State(move_arm_to_release_pos_top):
 
 		break;
 
 	// open gripper
-	case state(release_pipe_top):
+	case e_State(release_pipe_top):
 
 		break;
 
 	// move to center
-	case state(move_to_center):
+	case e_State(move_to_center):
 
 		break;
 
 	// wait 5s
-	case state(wait_5s):
+	case e_State(wait_5s):
 
 		break;
 
 	// move to pipe top position
-	case state(move_to_pipe_top):
+	case e_State(move_to_pipe_top):
 
 		break;
 
 	// close gripper on top pos
-	case state(grip_pipe_top):
+	case e_State(grip_pipe_top):
 
 		break;
 
 	// move pipe out top
-	case state(drag_pipe_out_top):
+	case e_State(drag_pipe_out_top):
 
 		break;
 
 	// move arm in transport pposition to bottom
-	case state(move_arm_in_transport_pos_to_bottom):
+	case e_State(move_arm_in_transport_pos_to_bottom):
 
 		break;
 
 	// move to bottom
-	case state(move_to_bottom):
+	case e_State(move_to_bottom):
 
 		break;
 
 	// open gripper
-	case state(release_pipe_bottom):
+	case e_State(release_pipe_bottom):
 
 		break;
 
 	// move to endposition
-	case state(move_to_endpos):
+	case e_State(move_to_endpos):
 
 		break;
 
 	// end
-	case state(end):
+	case e_State(end):
 
 		break;
 
 	// reset by programm bug
 	default:
-		sequencer = state(start);
+		sn_Sequencer = e_State(start);
 		break;
 	}
 
@@ -185,15 +211,14 @@ void Outputs(){
 
 // setup
 void setup() {
-	Serial.begin(9600);							// start serial communication
+	Serial.begin(sn_BaudRate);					// start serial communication
 	
 	AFMS.begin();								// start motor shield
 
-	GripperServo.attach(2);						// attach GripperServo to pin 2
-	ArmServo.attach(3);							// attach ArmServo to pin 3
+	GripperServo.attach(sn_GripperServoPin);	// attach GripperServo to pin 2
+	ArmServo.attach(sn_ArmServoPin);			// attach ArmServo to pin 3
 
-	sequencer = 0;								// set sequence to init
-
+	sn_Sequencer = 0;							// set sequence to init
 }
 
 // loop
@@ -209,10 +234,9 @@ void loop() {
 	
 	
 	if (SensorFront.result()){
-		stepper1->onestep(FORWARD, DOUBLE);
+		Stepper->onestep(FORWARD, DOUBLE);
 	}
 
 	ArmServo.writeMicroseconds(910);
 	*/
-
 }

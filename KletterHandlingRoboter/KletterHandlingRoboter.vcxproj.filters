@@ -24,9 +24,15 @@
     <ClInclude Include="TrackSensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Users\matthias.stieger.COMPUTECHNIC\Desktop\iecTimer\iecTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TrackSensor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Users\matthias.stieger.COMPUTECHNIC\Desktop\iecTimer\iecTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
