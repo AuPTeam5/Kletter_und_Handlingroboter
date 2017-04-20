@@ -19,19 +19,19 @@
 
 // const int
 const int
-	sn_SensorFrontPin = 0,				// pin for front sensor
-	sn_SensorCenterPin = 1,				// pin for center sensor
-	sn_SensorBackPin = 2,				// pin for back sensor
-	sn_GripperServoPin = 2,				// pin for gripper servo
-	sn_ArmServoPin = 3,					// pin for arm servo
-	sn_BaudRate = 9600,					// baud rate for serial communication
-	sn_ShieldAdress			= 0x60,		// motor shield adress
-	sn_StepperResolution	= 200		// steps / u ( 360° / 1.8° per step)
+	sn_SensorFrontPin		= 0,				// pin for front sensor
+	sn_SensorCenterPin		= 1,				// pin for center sensor
+	sn_SensorBackPin		= 2,				// pin for back sensor
+	sn_GripperServoPin		= 2,				// pin for gripper servo
+	sn_ArmServoPin			= 3,				// pin for arm servo
+	sn_BaudRate				= 9600,				// baud rate for serial communication
+	sn_ShieldAdress			= 0x60,				// motor shield adress
+	sn_StepperResolution	= 200				// steps / u ( 360° / 1.8° per step)
 ;
 
 // int
 int
-	sn_Sequencer			= 0			// main sequence						
+	sn_Sequencer			= 0					// main sequence						
 ;
 
 // enum
