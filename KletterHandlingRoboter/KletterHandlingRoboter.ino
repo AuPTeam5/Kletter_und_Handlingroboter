@@ -75,7 +75,6 @@ Servo ArmServo;
 IRrecv IRRx(sn_IRPin);
 decode_results Results;
 
-
 // functions
 /////////////////////////////////////////////////////////////////////
 
@@ -234,17 +233,37 @@ void setup() {
 	sn_Sequencer = 0;							// set sequence to init
 
 	IRRx.enableIRIn();							// start the IR receiver
+
+	pinMode(51, OUTPUT);
+	pinMode(50, INPUT);
 }
 
 // loop
 void loop() {
 	
+
 	// call functions
 	
+	static TOF ton_Timer;
+
 	void MainSequence();						// main controll sequence
 	void Outputs();								// outputs
 	
+
 	
+	bool pin = digitalRead(50);
+	bool out = false;
+	unsigned long pt = 5000;
+	unsigned long et;
+
+	
+	ton_Timer.in(pin);
+	ton_Timer.et(et);
+	ton_Timer.pt(pt);
+	ton_Timer.q(out);
+	digitalWrite(51,out);
+					
+	/*
 	if (IRRx.decode(&Results)) {
 		Serial.println(Results.value, HEX);
 		IRRx.resume();
