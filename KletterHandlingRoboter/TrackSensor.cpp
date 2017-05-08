@@ -7,13 +7,15 @@ Author:		Florian Steiger, Kushtrim Thaqi, Matthias Stieger
 #include "Arduino.h"
 #include "TrackSensor.h"
 
-TrackSensor::TrackSensor(int pin){
+TrackSensor::TrackSensor(int pin)
+	: _pin(pin), average(1)
+{
 	_pin = pin;
 }
 
+
 boolean TrackSensor::result() {
 	
-
 	int timer = 20;
 	int mapvalue = 0;
 	unsigned long average = 0;

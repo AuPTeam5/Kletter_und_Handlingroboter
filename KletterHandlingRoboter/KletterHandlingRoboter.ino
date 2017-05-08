@@ -7,11 +7,12 @@
 // libary
 /////////////////////////////////////////////////////////////////////
 
+#include <IRremote.h>
 #include <Servo.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 #include "TrackSensor.h"
-#include "iecTimer.h"
+#include "Timer.h"
 
 
 // variables
@@ -19,11 +20,12 @@
 
 // const int
 const int
-	sn_SensorFrontPin		= 0,				// pin for front sensor
-	sn_SensorCenterPin		= 1,				// pin for center sensor
-	sn_SensorBackPin		= 2,				// pin for back sensor
-	sn_GripperServoPin		= 2,				// pin for gripper servo
-	sn_ArmServoPin			= 3,				// pin for arm servo
+	sn_SensorFrontPin		= 3,				// pin for front sensor
+	sn_SensorCenterPin		= 4,				// pin for center sensor
+	sn_SensorBackPin		= 5,				// pin for back sensor
+	sn_GripperServoPin		= 9,				// pin for gripper servo
+	sn_ArmServoPin			= 10,				// pin for arm servo
+	sn_IRPin				= 7,				// pin for IR remote
 	sn_BaudRate				= 9600,				// baud rate for serial communication
 	sn_ShieldAdress			= 0x60,				// motor shield adress
 	sn_StepperResolution	= 200				// steps / u ( 360° / 1.8° per step)
@@ -70,6 +72,9 @@ TrackSensor SensorBack(sn_SensorBackPin);
 Servo GripperServo;
 Servo ArmServo;
 
+IRrecv IRRx(sn_IRPin);
+decode_results Results;
+
 
 // functions
 /////////////////////////////////////////////////////////////////////
@@ -81,26 +86,19 @@ void MainSequence() {
 	/////////////////////////////////////////////////////////////////////
 
 	// bool
-	bool
-		is_inTimer				= false,	// start input
-		is_outTimer				= false;	// timer out put
+
 
 	// unsignd long
-	unsigned long 
-		ul_PT					= 500,		// programmed time in [ms]
-		ul_ET					= 0;		// established time im [ms]
 
 
 	// objects
 	/////////////////////////////////////////////////////////////////////
 
-	Ton ton_Sequencer(&is_inTimer, &is_outTimer, &ul_PT, &ul_ET);
-
+	
 	// start timer
 	/////////////////////////////////////////////////////////////////////
 
-	ton_Sequencer.run();					// activate timer
-
+	
 	// sequence
 	/////////////////////////////////////////////////////////////////////
 
@@ -234,16 +232,27 @@ void setup() {
 	ArmServo.attach(sn_ArmServoPin);			// attach ArmServo to pin 3
 
 	sn_Sequencer = 0;							// set sequence to init
+
+	IRRx.enableIRIn();							// start the IR receiver
 }
 
 // loop
 void loop() {
 	
 	// call functions
+	
 	void MainSequence();						// main controll sequence
 	void Outputs();								// outputs
+	
+	
+	if (IRRx.decode(&Results)) {
+		Serial.println(Results.value, HEX);
+		IRRx.resume();
+	}
+	delay(100);
 
 	/*
+	
 	Serial.print("SensorFront = ");
 	Serial.println(SensorFront.result());
 	
