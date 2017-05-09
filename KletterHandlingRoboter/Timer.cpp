@@ -1,3 +1,9 @@
+/*
+Name:		Timer.cpp
+Created:	08.05.2017 15:44:00
+Author:		Matthias Stieger
+*/
+
 #include  "Timer.h"
 
 
@@ -72,7 +78,7 @@ TOF::~TOF()
 
 bool TOF::q()
 {
-	et_ = startzeit - millis();
+	et_ = pt_ - (startzeit - millis());
 	
 	if (in_)
 	{
@@ -82,7 +88,7 @@ bool TOF::q()
 	}
 	else if (!in_ && q_)
 	{
-		if (et_ <= 0) {
+		if (et_ >= pt_) {
 			q_ = in_;
 		}
 	}

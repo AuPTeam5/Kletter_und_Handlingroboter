@@ -14,7 +14,7 @@ TrackSensor::TrackSensor(int pin)
 }
 
 
-boolean TrackSensor::result() {
+bool TrackSensor::result() {
 	
 	int timer = 20;
 	int mapvalue = 0;
@@ -23,16 +23,22 @@ boolean TrackSensor::result() {
 	unsigned long CurrentTime = millis();
 
 	if ((CurrentTime - Reference) >= timer ) {
-		for (int i = 0; i <= 9; i++) {
+		for (int i = 0; i <= 9; i++) 
+		{
 			average += analogRead(_pin);
 		}
+
 		mapvalue = map((average/10), 0, 1024, 0, 100);
-		if (mapvalue <= 50) {
+
+		if (mapvalue <= 50) 
+		{
 			return true;
 		}
-		else {
+		else 
+		{
 			return false;
-		}	
+		}
+
 		Reference = CurrentTime;
 	}
 }

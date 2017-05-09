@@ -19,22 +19,11 @@
 /////////////////////////////////////////////////////////////////////
 
 // const int
-const int
-	sn_SensorFrontPin		= 3,				// pin for front sensor
-	sn_SensorCenterPin		= 4,				// pin for center sensor
-	sn_SensorBackPin		= 5,				// pin for back sensor
-	sn_GripperServoPin		= 9,				// pin for gripper servo
-	sn_ArmServoPin			= 10,				// pin for arm servo
-	sn_IRPin				= 7,				// pin for IR remote
-	sn_BaudRate				= 9600,				// baud rate for serial communication
-	sn_ShieldAdress			= 0x60,				// motor shield adress
-	sn_StepperResolution	= 200				// steps / u ( 360° / 1.8° per step)
+const int sn_BaudRate		= 9600;				// baud rate for serial communication
 ;
 
 // int
-int
-	sn_Sequencer			= 0					// main sequence						
-;
+int	sn_Sequencer			= 0;				// main sequence						
 
 // enum
 enum e_State {							// enumeration for sequencer
@@ -56,24 +45,7 @@ enum e_State {							// enumeration for sequencer
 	release_pipe_bottom,
 	move_to_endpos,
 	end
-};
-
-
-// objects
-/////////////////////////////////////////////////////////////////////
-
-Adafruit_MotorShield AFMS = Adafruit_MotorShield(sn_ShieldAdress);
-Adafruit_StepperMotor *Stepper = AFMS.getStepper(sn_StepperResolution, 1);
-
-TrackSensor SensorFront(sn_SensorFrontPin);
-TrackSensor SensorCenter(sn_SensorCenterPin);
-TrackSensor SensorBack(sn_SensorBackPin);
-
-Servo GripperServo;
-Servo ArmServo;
-
-IRrecv IRRx(sn_IRPin);
-decode_results Results;
+};					
 
 // functions
 /////////////////////////////////////////////////////////////////////
@@ -84,20 +56,34 @@ void MainSequence() {
 	// variables
 	/////////////////////////////////////////////////////////////////////
 
-	// bool
+	// static bool
+	static bool firstCycle = true;
 
-
-	// unsignd long
-
+	// const int
+	const int
+		sn_SensorFrontPin = 3,				// pin for front sensor
+		sn_SensorCenterPin = 4,				// pin for center sensor
+		sn_SensorBackPin = 5,				// pin for back sensor
+		sn_IRPin = 7						// pin for IR remote
+		;
 
 	// objects
 	/////////////////////////////////////////////////////////////////////
 
-	
-	// start timer
-	/////////////////////////////////////////////////////////////////////
+	static TrackSensor SensorFront(sn_SensorFrontPin);
+	static TrackSensor SensorCenter(sn_SensorCenterPin);
+	static TrackSensor SensorBack(sn_SensorBackPin);
+	static IRrecv IRRx(sn_IRPin);
+	static decode_results Results;
 
+	// init
+	/////////////////////////////////////////////////////////////////////
 	
+	if (firstCycle)
+	{
+		IRRx.enableIRIn();						// start the IR receiver
+	}
+
 	// sequence
 	/////////////////////////////////////////////////////////////////////
 
@@ -199,13 +185,47 @@ void MainSequence() {
 		break;
 	}
 
-};
+	// reset first cycle variable
+	/////////////////////////////////////////////////////////////////////
+
+	firstCycle = false;
+}
 
 // outputs
 void Outputs(){
 
 	// variables
 	/////////////////////////////////////////////////////////////////////
+
+	// static bool
+	static bool firstCycle = true;
+
+	// const int
+	const int
+		sn_GripperServoPin = 9,					// pin for gripper servo
+		sn_ArmServoPin = 10,					// pin for arm servo
+		sn_ShieldAdress = 0x60,					// motor shield adress
+		sn_StepperResolution = 200				// steps / u ( 360° / 1.8° per step)
+		;
+
+
+	// objects
+	/////////////////////////////////////////////////////////////////////
+
+	static Adafruit_MotorShield AFMS = Adafruit_MotorShield(sn_ShieldAdress);
+	static Adafruit_StepperMotor *Stepper = AFMS.getStepper(sn_StepperResolution, 1);
+	static Servo GripperServo;
+	static Servo ArmServo;
+
+	// init
+	/////////////////////////////////////////////////////////////////////
+
+	if (firstCycle)
+	{
+		AFMS.begin();								// start motor shield
+		GripperServo.attach(sn_GripperServoPin);	// attach GripperServo to pin 2
+		ArmServo.attach(sn_ArmServoPin);			// attach ArmServo to pin 3
+	}
 
 	// arm servo
 	/////////////////////////////////////////////////////////////////////
@@ -215,7 +235,12 @@ void Outputs(){
 
 	// stepper
 	/////////////////////////////////////////////////////////////////////
-};
+
+	// reset first cycle variable
+	/////////////////////////////////////////////////////////////////////
+
+	firstCycle = false;
+}
 
 
 // main programm
@@ -224,45 +249,35 @@ void Outputs(){
 // setup
 void setup() {
 	Serial.begin(sn_BaudRate);					// start serial communication
-	
-	AFMS.begin();								// start motor shield
-
-	GripperServo.attach(sn_GripperServoPin);	// attach GripperServo to pin 2
-	ArmServo.attach(sn_ArmServoPin);			// attach ArmServo to pin 3
-
 	sn_Sequencer = 0;							// set sequence to init
-
-	IRRx.enableIRIn();							// start the IR receiver
-
-	pinMode(51, OUTPUT);
-	pinMode(50, INPUT);
 }
 
 // loop
 void loop() {
 	
 	// call functions
+	/////////////////////////////////////////////////////////////////////
 	
+	MainSequence();							// main controll sequence
+	Outputs();								// outputs
+	
+	/*
+
+	if (IRRx.decode(&Results)) {
+		Serial.println(Results.value);
+		IRRx.resume();
+	}
+	delay(100);
+
 	static TON ton_Timer;
-	
-	void MainSequence();						// main controll sequence
-	void Outputs();								// outputs
-	
+
 	unsigned long et = ton_Timer.et();
 
 	ton_Timer.in(digitalRead(50));
 	ton_Timer.pt(5000);
 	digitalWrite(51, ton_Timer.q());
-					
-	/*
-	if (IRRx.decode(&Results)) {
-		Serial.println(Results.value, HEX);
-		IRRx.resume();
-	}
-	delay(100);
+	Serial.println(ton_Timer.et());
 
-	/*
-	
 	Serial.print("SensorFront = ");
 	Serial.println(SensorFront.result());
 	
@@ -272,5 +287,6 @@ void loop() {
 	}
 
 	ArmServo.writeMicroseconds(910);
+
 	*/
 }
