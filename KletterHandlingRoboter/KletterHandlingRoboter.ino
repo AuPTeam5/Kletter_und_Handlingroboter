@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  Name:		KletterHandlingRoboter.ino
  Created:	14.01.2017 08:37:39
  Author:	Florian Steiger, Kushtrim Thaqi, Matthias Stieger
@@ -19,14 +19,13 @@
 /////////////////////////////////////////////////////////////////////
 
 // const int
-const int sn_BaudRate		= 9600;				// baud rate for serial communication
-;
+const int BaudRate = 9600;				// baud rate for serial communication
 
 // int
-int	sn_Sequencer			= 0;				// main sequence						
+int	Sequencer = 0;						// main sequence						
 
 // enum
-enum e_State {							// enumeration for sequencer
+enum State {							// enumeration for sequencer
 	start,
 	move_to_pipe_bottom,
 	grip_pipe_bottom,
@@ -47,6 +46,7 @@ enum e_State {							// enumeration for sequencer
 	end
 };					
 
+
 // functions
 /////////////////////////////////////////////////////////////////////
 
@@ -57,131 +57,176 @@ void MainSequence() {
 	/////////////////////////////////////////////////////////////////////
 
 	// static bool
-	static bool firstCycle = true;
+	static bool
+		firstCycle = true,
+		SequencerTimerIN = false,
+		SequencerTimerOUT = false;
 
+	// static long
+		static long
+		SequencerTimerPt = 0,
+		SequencerTimerEt = 0;
+	
 	// const int
 	const int
-		sn_SensorFrontPin = 3,				// pin for front sensor
-		sn_SensorCenterPin = 4,				// pin for center sensor
-		sn_SensorBackPin = 5,				// pin for back sensor
-		sn_IRPin = 7						// pin for IR remote
+		SensorFrontPin = 3,				// pin for front sensor
+		SensorCenterPin = 4,			// pin for center sensor
+		SensorBackPin = 5,				// pin for back sensor
+		IRPin = 7						// pin for IR remote
+		;
+
+	// const unsigned long
+	const unsigned long 
+		IRRxStart = 16761405,			// start signal (  PLAY/PAUSE button )
+		IRRxReset = 16736925,			// start signal ( CH button )
+		GripperTime = 2000				// timer for gripper movement
 		;
 
 	// objects
 	/////////////////////////////////////////////////////////////////////
 
-	static TrackSensor SensorFront(sn_SensorFrontPin);
-	static TrackSensor SensorCenter(sn_SensorCenterPin);
-	static TrackSensor SensorBack(sn_SensorBackPin);
-	static IRrecv IRRx(sn_IRPin);
+	static TrackSensor SensorFront(SensorFrontPin);
+	static TrackSensor SensorCenter(SensorCenterPin);
+	static TrackSensor SensorBack(SensorBackPin);
+	static IRrecv IRRx(IRPin);
 	static decode_results Results;
+	static TON SequencerTimer;
 
 	// init
 	/////////////////////////////////////////////////////////////////////
 	
 	if (firstCycle)
 	{
-		IRRx.enableIRIn();						// start the IR receiver
+		IRRx.enableIRIn();				// start the IR receiver
 	}
+
+	// timer
+	/////////////////////////////////////////////////////////////////////
+	SequencerTimer.in(SequencerTimerIN);
+	SequencerTimer.pt(SequencerTimerPt);
+	SequencerTimerEt = SequencerTimer.et();
+	SequencerTimerOUT = SequencerTimer.q();
 
 	// sequence
 	/////////////////////////////////////////////////////////////////////
 
-	switch (sn_Sequencer){
+	Serial.println(Sequencer, DEC);
+
+	switch (Sequencer){
 
 	// init
-	case e_State(start):
-
+	case start:
+		if (IRRx.decode(&Results))
+		{
+			if (IRRxStart == Results.value)
+			{
+				Sequencer = move_to_pipe_bottom;
+			}
+			IRRx.resume();
+		}
 		break;
 
 	// move to pipe bottom position
-	case e_State(move_to_pipe_bottom):
+	case move_to_pipe_bottom:
 
 		break;
 
 	// close gripper bottom pos
-	case e_State(grip_pipe_bottom):
+	case grip_pipe_bottom:
 
 		break;
 		
 	// move pipe out bottom
-	case e_State(drag_pipe_out_bottom):
-
+	case drag_pipe_out_bottom:
+		SequencerTimerPt = GripperTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = grip_pipe_bottom;
+		}
 		break;
 
 	// pepare arm for move to top
-	case e_State(move_arm_in_transport_pos_to_top):
+	case move_arm_in_transport_pos_to_top:
 
 		break;
 
 	// move to top position
-	case e_State(move_to_top):
+	case move_to_top:
 
 		break;
 
 	// move arm in release position on top
-	case e_State(move_arm_to_release_pos_top):
+	case move_arm_to_release_pos_top:
 
 		break;
 
 	// open gripper
-	case e_State(release_pipe_top):
+	case release_pipe_top:
 
 		break;
 
 	// move to center
-	case e_State(move_to_center):
+	case move_to_center:
 
 		break;
 
 	// wait 5s
-	case e_State(wait_5s):
+	case wait_5s:
 
 		break;
 
 	// move to pipe top position
-	case e_State(move_to_pipe_top):
+	case move_to_pipe_top:
 
 		break;
 
 	// close gripper on top pos
-	case e_State(grip_pipe_top):
+	case grip_pipe_top:
 
 		break;
 
 	// move pipe out top
-	case e_State(drag_pipe_out_top):
+	case drag_pipe_out_top:
 
 		break;
 
 	// move arm in transport pposition to bottom
-	case e_State(move_arm_in_transport_pos_to_bottom):
+	case move_arm_in_transport_pos_to_bottom:
 
 		break;
 
 	// move to bottom
-	case e_State(move_to_bottom):
+	case move_to_bottom:
 
 		break;
 
 	// open gripper
-	case e_State(release_pipe_bottom):
+	case release_pipe_bottom:
 
 		break;
 
 	// move to endposition
-	case e_State(move_to_endpos):
+	case move_to_endpos:
 
 		break;
 
 	// end
-	case e_State(end):
-
+	case State(end):
+		if (IRRx.decode(&Results))
+		{
+			if (IRRxReset == Results.value)
+			{
+				Sequencer = start;
+			}
+			IRRx.resume();
+		}
 		break;
 
 	// reset by programm bug
 	default:
-		sn_Sequencer = e_State(start);
+		Sequencer = start;
 		break;
 	}
 
@@ -202,18 +247,18 @@ void Outputs(){
 
 	// const int
 	const int
-		sn_GripperServoPin = 9,					// pin for gripper servo
-		sn_ArmServoPin = 10,					// pin for arm servo
-		sn_ShieldAdress = 0x60,					// motor shield adress
-		sn_StepperResolution = 200				// steps / u ( 360° / 1.8° per step)
+		GripperServoPin = 9,					// pin for gripper servo
+		ArmServoPin = 10,						// pin for arm servo
+		ShieldAdress = 0x60,					// motor shield adress
+		StepperResolution = 200					// steps / u ( 360Â° / 1.8Â° per step)
 		;
 
 
 	// objects
 	/////////////////////////////////////////////////////////////////////
 
-	static Adafruit_MotorShield AFMS = Adafruit_MotorShield(sn_ShieldAdress);
-	static Adafruit_StepperMotor *Stepper = AFMS.getStepper(sn_StepperResolution, 1);
+	static Adafruit_MotorShield AFMS = Adafruit_MotorShield(ShieldAdress);
+	static Adafruit_StepperMotor *Stepper = AFMS.getStepper(StepperResolution, 1);
 	static Servo GripperServo;
 	static Servo ArmServo;
 
@@ -223,9 +268,9 @@ void Outputs(){
 	if (firstCycle)
 	{
 		AFMS.begin();								// start motor shield
-		GripperServo.attach(sn_GripperServoPin);	// attach GripperServo to pin 2
-		ArmServo.attach(sn_ArmServoPin);			// attach ArmServo to pin 3
-	}
+		GripperServo.attach(GripperServoPin);		// attach GripperServo to pin 2
+		ArmServo.attach(ArmServoPin);				// attach ArmServo to pin 3
+	} 
 
 	// arm servo
 	/////////////////////////////////////////////////////////////////////
@@ -242,14 +287,11 @@ void Outputs(){
 	firstCycle = false;
 }
 
-
-// main programm
-/////////////////////////////////////////////////////////////////////
-
 // setup
 void setup() {
-	Serial.begin(sn_BaudRate);					// start serial communication
-	sn_Sequencer = 0;							// set sequence to init
+
+	Serial.begin(BaudRate);					// start serial communication
+	Sequencer = 0;							// set sequence to init
 }
 
 // loop
@@ -260,33 +302,4 @@ void loop() {
 	
 	MainSequence();							// main controll sequence
 	Outputs();								// outputs
-	
-	/*
-
-	if (IRRx.decode(&Results)) {
-		Serial.println(Results.value);
-		IRRx.resume();
-	}
-	delay(100);
-
-	static TON ton_Timer;
-
-	unsigned long et = ton_Timer.et();
-
-	ton_Timer.in(digitalRead(50));
-	ton_Timer.pt(5000);
-	digitalWrite(51, ton_Timer.q());
-	Serial.println(ton_Timer.et());
-
-	Serial.print("SensorFront = ");
-	Serial.println(SensorFront.result());
-	
-	
-	if (SensorFront.result()){
-		Stepper->onestep(FORWARD, DOUBLE);
-	}
-
-	ArmServo.writeMicroseconds(910);
-
-	*/
 }
