@@ -241,27 +241,18 @@ void setup() {
 // loop
 void loop() {
 	
-
 	// call functions
 	
-	static TOF ton_Timer;
-
+	static TON ton_Timer;
+	
 	void MainSequence();						// main controll sequence
 	void Outputs();								// outputs
 	
+	unsigned long et = ton_Timer.et();
 
-	
-	bool pin = digitalRead(50);
-	bool out = false;
-	unsigned long pt = 5000;
-	unsigned long et;
-
-	
-	ton_Timer.in(pin);
-	ton_Timer.et(et);
-	ton_Timer.pt(pt);
-	ton_Timer.q(out);
-	digitalWrite(51,out);
+	ton_Timer.in(digitalRead(50));
+	ton_Timer.pt(5000);
+	digitalWrite(51, ton_Timer.q());
 					
 	/*
 	if (IRRx.decode(&Results)) {

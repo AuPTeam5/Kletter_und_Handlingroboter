@@ -1,82 +1,91 @@
 #include  "Timer.h"
 
+
+Timer::Timer()
+	: startzeit(millis())
+{
+}
+
+Timer::~Timer()
+{
+}
+
+void Timer::in(bool in)
+{
+	in_ = in;
+}
+
+bool Timer::q()
+{
+}
+
+void Timer::pt(unsigned long pt)
+{
+	pt_ = pt;
+}
+
+unsigned long Timer::et()
+{
+	return et_;
+}
+
+
 // TON
-
 TON::TON()
+	: Timer()
 {
-    lastq = _q;
-    startzeit = millis();
 }
 
-void TON::in(bool& in)
+TON::~TON()
 {
-	_in = in;
 }
 
-void TON::et(unsigned long& et)
+bool TON::q()
 {
-	et = _et;
-}
+	et_ = millis() - startzeit;
 
-void TON::pt(unsigned long& pt)
-{
-	_pt = pt;
-}
-
-void TON::q(bool& q)
-{
-	_et = millis()-startzeit;
-	if(!_in) 
+	if (!in_)
 	{
-		_et = 0;
-		_q  = _in;
-		startzeit  = millis();
-	}else if(_in && !_q) 
+		et_ = 0;
+		q_  = in_;
+		startzeit = millis();
+	} else if (in_ && !q_)
 	{
-		if(_et >= _pt){
-			_q = _in;
+		if (et_ >= pt_){
+			q_ = in_;
 		}
 	}
-	q = _q;
+	
+	return q_;
 }
+
 
 // TOF
-
 TOF::TOF()
+	: Timer()
 {
-	lastq = _q;
-	startzeit = millis();
 }
 
-void TOF::in(bool& in)
+TOF::~TOF()
 {
-	_in = in;
 }
 
-void TOF::et(unsigned long& et)
+bool TOF::q()
 {
-	et = _et;
-}
-
-void TOF::pt(unsigned long& pt)
-{
-	_pt = pt;
-}
-
-void TOF::q(bool& q)
-{
-	_et = startzeit - millis();
-	if (_in)
+	et_ = startzeit - millis();
+	
+	if (in_)
 	{
-		_et = 0;
-		_q = _in;
-		startzeit = millis() + _pt;
+		et_ = 0;
+		q_ = in_;
+		startzeit = millis() + pt_;
 	}
-	else if (!_in && _q)
+	else if (!in_ && q_)
 	{
-		if (_et <= 0) {
-			_q = _in;
+		if (et_ <= 0) {
+			q_ = in_;
 		}
 	}
-	q = _q;
+
+	return q_;
 }
