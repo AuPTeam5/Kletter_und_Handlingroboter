@@ -58,14 +58,17 @@ void MainSequence() {
 
 	// static bool
 	static bool
-		firstCycle = true,
-		SequencerTimerIN = false,
-		SequencerTimerOUT = false;
+		firstCycle = true,				// flag for first cycle
+		SequencerTimerIN = false,		// input flag for SequencerTimer
+		SequencerTimerOUT = false,		// output flag for SequencerTimer
+		CenterPos = false				// flag for FrontSensor is over center mark
+		;
 
 	// static long
 		static long
-		SequencerTimerPt = 0,
-		SequencerTimerEt = 0;
+		SequencerTimerPt = 0,			// programmed time for SequencerTimer
+		SequencerTimerEt = 0			// established time for SequencerTimer
+		;
 	
 	// const int
 	const int
@@ -79,7 +82,10 @@ void MainSequence() {
 	const unsigned long 
 		IRRxStart = 16761405,			// start signal (  PLAY/PAUSE button )
 		IRRxReset = 16736925,			// start signal ( CH button )
-		GripperTime = 2000				// timer for gripper movement
+		StartupTime = 2000,				// startuptime [ms]
+		GripperTime = 1000,				// timer for gripper movement [ms]
+		MoveOutTime = 300,				// time to move pipe out [ms]
+		TransportPosTime = 1000			// time to move arm in transport position [ms]
 		;
 
 	// objects
@@ -112,49 +118,78 @@ void MainSequence() {
 
 	Serial.println(Sequencer, DEC);
 
-	switch (Sequencer){
+	switch (Sequencer) {
 
 	// init
 	case start:
-		if (IRRx.decode(&Results))
+		SequencerTimerPt = StartupTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
 		{
-			if (IRRxStart == Results.value)
+			if (IRRx.decode(&Results))
 			{
-				Sequencer = move_to_pipe_bottom;
+				if (IRRxStart == Results.value)
+				{
+					SequencerTimerIN = false;
+					Sequencer = move_to_pipe_bottom;
+				}
+				IRRx.resume();
 			}
-			IRRx.resume();
 		}
 		break;
 
 	// move to pipe bottom position
 	case move_to_pipe_bottom:
-
+		if (SensorBack.result())
+		{
+			Sequencer = grip_pipe_bottom;
+		}
 		break;
 
 	// close gripper bottom pos
 	case grip_pipe_bottom:
-
-		break;
-		
-	// move pipe out bottom
-	case drag_pipe_out_bottom:
 		SequencerTimerPt = GripperTime;
 		SequencerTimerIN = true;
 		if (SequencerTimerOUT)
 		{
 			SequencerTimerIN = false;
-			Sequencer = grip_pipe_bottom;
+			Sequencer = drag_pipe_out_bottom;
+		}
+		break;
+		
+	// move pipe out bottom
+	case drag_pipe_out_bottom:
+		SequencerTimerPt = MoveOutTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = move_arm_in_transport_pos_to_top;
 		}
 		break;
 
 	// pepare arm for move to top
 	case move_arm_in_transport_pos_to_top:
-
+		SequencerTimerPt = TransportPosTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = move_to_top;
+		}
 		break;
 
 	// move to top position
 	case move_to_top:
-
+		if (SensorCenter.result())
+		{
+			CenterPos = true;
+		}
+		if (SensorFront.result() && CenterPos)
+		{
+			CenterPos = false;
+			Sequencer = move_arm_to_release_pos_top;
+		}
 		break;
 
 	// move arm in release position on top
@@ -250,7 +285,10 @@ void Outputs(){
 		GripperServoPin = 9,					// pin for gripper servo
 		ArmServoPin = 10,						// pin for arm servo
 		ShieldAdress = 0x60,					// motor shield adress
-		StepperResolution = 200					// steps / u ( 360° / 1.8° per step)
+		StepperResolution = 200,				// steps / u ( 360° / 1.8° per step)
+		StepperSpeed = 180,						// stepper speed [rpm]
+		ArmServoHome = 900,						// home position for arm servo
+		GripperServoHome = 900;					// home position for gripper servo
 		;
 
 
@@ -270,16 +308,35 @@ void Outputs(){
 		AFMS.begin();								// start motor shield
 		GripperServo.attach(GripperServoPin);		// attach GripperServo to pin 2
 		ArmServo.attach(ArmServoPin);				// attach ArmServo to pin 3
+		Stepper->setSpeed(StepperSpeed);			// set stepper speed
 	} 
 
 	// arm servo
 	/////////////////////////////////////////////////////////////////////
+	
+	if (Sequencer == start)
+	{
+		ArmServo.writeMicroseconds(ArmServoHome);
+	}
+	
 
 	// gripper servo
 	/////////////////////////////////////////////////////////////////////
+	
+	if (Sequencer == start)
+	{
+		GripperServo.writeMicroseconds(GripperServoHome);
+	}
+
 
 	// stepper
 	/////////////////////////////////////////////////////////////////////
+
+	if ((Sequencer == start) && firstCycle)
+	{
+		Stepper->onestep(FORWARD, DOUBLE);
+	}
+
 
 	// reset first cycle variable
 	/////////////////////////////////////////////////////////////////////
@@ -291,7 +348,7 @@ void Outputs(){
 void setup() {
 
 	Serial.begin(BaudRate);					// start serial communication
-	Sequencer = 0;							// set sequence to init
+	Sequencer = start;						// set sequence to init
 }
 
 // loop
