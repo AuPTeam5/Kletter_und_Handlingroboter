@@ -83,9 +83,11 @@ void MainSequence() {
 		IRRxStart = 16761405,			// start signal (  PLAY/PAUSE button )
 		IRRxReset = 16736925,			// start signal ( CH button )
 		StartupTime = 2000,				// startuptime [ms]
+		WaitingTime = 5000,				// delay in center position [ms]
 		GripperTime = 1000,				// timer for gripper movement [ms]
 		MoveOutTime = 300,				// time to move pipe out [ms]
-		TransportPosTime = 1000			// time to move arm in transport position [ms]
+		TransportPosTime = 1000,		// time to move arm in transport position [ms]
+		HalfRotTime = 500				// time to rotate arm 180° [ms]
 		;
 
 	// objects
@@ -194,61 +196,115 @@ void MainSequence() {
 
 	// move arm in release position on top
 	case move_arm_to_release_pos_top:
-
+		SequencerTimerPt = HalfRotTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = release_pipe_top;
+		}
 		break;
 
 	// open gripper
 	case release_pipe_top:
-
+		SequencerTimerPt = GripperTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = move_to_center;
+		}
 		break;
 
 	// move to center
 	case move_to_center:
-
+		if (SensorCenter.result())
+		{
+			Sequencer = wait_5s;
+		}
 		break;
 
 	// wait 5s
 	case wait_5s:
-
+		SequencerTimerPt = WaitingTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = move_to_pipe_top;
+		}
 		break;
 
 	// move to pipe top position
 	case move_to_pipe_top:
-
+		if (SensorFront.result())
+		{
+			Sequencer = grip_pipe_top;
+		}
 		break;
 
 	// close gripper on top pos
 	case grip_pipe_top:
-
+		SequencerTimerPt = GripperTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = drag_pipe_out_top;
+		}
 		break;
 
 	// move pipe out top
 	case drag_pipe_out_top:
-
+		SequencerTimerPt = MoveOutTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = move_arm_in_transport_pos_to_bottom;
+		}
 		break;
 
 	// move arm in transport pposition to bottom
 	case move_arm_in_transport_pos_to_bottom:
-
+		SequencerTimerPt = HalfRotTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = move_to_bottom;
+		}
 		break;
 
 	// move to bottom
 	case move_to_bottom:
-
+		if (SensorFront.result())
+		{
+			Sequencer = release_pipe_bottom;
+		}
 		break;
 
 	// open gripper
 	case release_pipe_bottom:
-
+		SequencerTimerPt = GripperTime;
+		SequencerTimerIN = true;
+		if (SequencerTimerOUT)
+		{
+			SequencerTimerIN = false;
+			Sequencer = drag_pipe_out_top;
+		}
 		break;
 
 	// move to endposition
 	case move_to_endpos:
-
+		if (SensorCenter.result())
+		{
+			Sequencer = end;
+		}
 		break;
 
 	// end
-	case State(end):
+	case end:
 		if (IRRx.decode(&Results))
 		{
 			if (IRRxReset == Results.value)
