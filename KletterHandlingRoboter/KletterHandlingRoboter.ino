@@ -344,7 +344,11 @@ void Outputs(){
 		StepperResolution = 200,				// steps / u ( 360° / 1.8° per step)
 		StepperSpeed = 180,						// stepper speed [rpm]
 		ArmServoHome = 900,						// home position for arm servo
-		GripperServoHome = 900;					// home position for gripper servo
+		TransportPositionTop = 900,				// position arm for transport to top
+		ReleasePosTop = 900,					// release pos top
+		GripperServoHome = 900,					// home position for gripper servo
+		GripperServoClosed = 900,				// gripper is closed
+		PipeOutDistance = 200					// steps to move pipe out
 		;
 
 
@@ -370,29 +374,58 @@ void Outputs(){
 	// arm servo
 	/////////////////////////////////////////////////////////////////////
 	
-	if (Sequencer == start)
+	if (	(Sequencer == start)
+		 ||	(Sequencer == move_arm_in_transport_pos_to_bottom))
 	{
 		ArmServo.writeMicroseconds(ArmServoHome);
+	}
+	if ((Sequencer == move_arm_in_transport_pos_to_top))
+	{
+		ArmServo.writeMicroseconds(TransportPositionTop);
+	}
+	if ((Sequencer == move_arm_to_release_pos_top))
+	{
+		ArmServo.writeMicroseconds(ReleasePosTop);
 	}
 	
 
 	// gripper servo
 	/////////////////////////////////////////////////////////////////////
 	
-	if (Sequencer == start)
+	if (	(Sequencer == start)
+		 ||	(Sequencer == release_pipe_top)
+		 || (Sequencer == release_pipe_bottom))
 	{
 		GripperServo.writeMicroseconds(GripperServoHome);
+	}
+	if (	(Sequencer == grip_pipe_bottom)
+		 ||	(Sequencer == grip_pipe_top))
+	{
+		GripperServo.writeMicroseconds(GripperServoClosed);
 	}
 
 
 	// stepper
 	/////////////////////////////////////////////////////////////////////
 
-	if ((Sequencer == start) && firstCycle)
+	if (	((Sequencer == start) && firstCycle)
+		 ||	(Sequencer == move_to_top)
+		 || (Sequencer == move_to_pipe_top)
+		 || (Sequencer == move_to_endpos))
 	{
 		Stepper->onestep(FORWARD, DOUBLE);
 	}
-
+	if (	(Sequencer == move_to_pipe_bottom)
+		 ||	(Sequencer == move_to_center)
+		 || (Sequencer == move_to_bottom))
+	{
+		Stepper->onestep(BACKWARD, DOUBLE);
+	}
+	if (	(Sequencer == drag_pipe_out_bottom)
+		 ||	(Sequencer == drag_pipe_out_top))
+	{
+		Stepper->step(PipeOutDistance, FORWARD, DOUBLE);
+	}
 
 	// reset first cycle variable
 	/////////////////////////////////////////////////////////////////////
