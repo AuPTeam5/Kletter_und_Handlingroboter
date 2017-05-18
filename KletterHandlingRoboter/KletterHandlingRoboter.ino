@@ -61,14 +61,18 @@ void MainSequence() {
 		firstCycle = true,				// flag for first cycle
 		SequencerTimerIN = false,		// input flag for SequencerTimer
 		SequencerTimerOUT = false,		// output flag for SequencerTimer
-		SignalSensorFront = false,
-		SignalSensorCenter = false,
-		SignalSensorBack = false,
 		CenterPos = false				// flag for FrontSensor is over center mark
 		;
 
+	// bool
+	bool
+		SignalSensorFront = false,
+		SignalSensorCenter = false,
+		SignalSensorBack = false
+		;
+
 	// static long
-		static long
+	static long
 		SequencerTimerPt = 0,			// programmed time for SequencerTimer
 		SequencerTimerEt = 0			// established time for SequencerTimer
 		;
@@ -151,7 +155,6 @@ void MainSequence() {
 	case move_to_pipe_bottom:
 		if (SignalSensorBack)
 		{
-			Serial.println('true');
 			Sequencer = grip_pipe_bottom;
 		}
 		break;
