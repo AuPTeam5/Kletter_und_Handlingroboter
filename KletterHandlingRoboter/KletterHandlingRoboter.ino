@@ -61,6 +61,9 @@ void MainSequence() {
 		firstCycle = true,				// flag for first cycle
 		SequencerTimerIN = false,		// input flag for SequencerTimer
 		SequencerTimerOUT = false,		// output flag for SequencerTimer
+		SignalSensorFront = false,
+		SignalSensorCenter = false,
+		SignalSensorBack = false,
 		CenterPos = false				// flag for FrontSensor is over center mark
 		;
 
@@ -115,10 +118,14 @@ void MainSequence() {
 	SequencerTimerEt = SequencerTimer.et();
 	SequencerTimerOUT = SequencerTimer.q();
 
+	// track sensors
+	/////////////////////////////////////////////////////////////////////
+	SignalSensorFront	= SensorFront.result();
+	SignalSensorCenter	= SensorCenter.result();
+	SignalSensorBack	= SensorBack.result();
+
 	// sequence
 	/////////////////////////////////////////////////////////////////////
-
-	Serial.println(Sequencer, DEC);
 
 	switch (Sequencer) {
 
@@ -142,8 +149,9 @@ void MainSequence() {
 
 	// move to pipe bottom position
 	case move_to_pipe_bottom:
-		if (SensorBack.result())
+		if (SignalSensorBack)
 		{
+			Serial.println('true');
 			Sequencer = grip_pipe_bottom;
 		}
 		break;
@@ -183,11 +191,11 @@ void MainSequence() {
 
 	// move to top position
 	case move_to_top:
-		if (SensorCenter.result())
+		if (SignalSensorCenter)
 		{
 			CenterPos = true;
 		}
-		if (SensorFront.result() && CenterPos)
+		if (SignalSensorFront && CenterPos)
 		{
 			CenterPos = false;
 			Sequencer = move_arm_to_release_pos_top;
@@ -218,7 +226,7 @@ void MainSequence() {
 
 	// move to center
 	case move_to_center:
-		if (SensorCenter.result())
+		if (SignalSensorCenter)
 		{
 			Sequencer = wait_5s;
 		}
@@ -237,7 +245,7 @@ void MainSequence() {
 
 	// move to pipe top position
 	case move_to_pipe_top:
-		if (SensorFront.result())
+		if (SignalSensorFront)
 		{
 			Sequencer = grip_pipe_top;
 		}
@@ -278,7 +286,7 @@ void MainSequence() {
 
 	// move to bottom
 	case move_to_bottom:
-		if (SensorFront.result())
+		if (SignalSensorBack)
 		{
 			Sequencer = release_pipe_bottom;
 		}
@@ -297,7 +305,7 @@ void MainSequence() {
 
 	// move to endposition
 	case move_to_endpos:
-		if (SensorCenter.result())
+		if (SignalSensorCenter)
 		{
 			Sequencer = end;
 		}
@@ -320,7 +328,7 @@ void MainSequence() {
 		Sequencer = start;
 		break;
 	}
-
+	
 	// reset first cycle variable
 	/////////////////////////////////////////////////////////////////////
 
