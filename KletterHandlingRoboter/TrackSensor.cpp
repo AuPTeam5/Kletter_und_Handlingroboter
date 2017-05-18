@@ -26,7 +26,7 @@ bool TrackSensor::result() {
 
 	mapvalue = map((average/10), 0, 1024, 0, 100);
 
-	if (mapvalue <= 50) 
+	if ((mapvalue > 10) && (mapvalue < 60))
 	{
 		return true;
 	}
