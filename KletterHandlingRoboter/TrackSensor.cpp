@@ -1,7 +1,7 @@
 /*
 Name:		TrackSensor.cpp
 Created:	08.04.2017 15:44:00
-Author:		Florian Steiger, Kushtrim Thaqi, Matthias Stieger
+Author:		Matthias Stieger
 */
 
 #include "Arduino.h"
@@ -11,6 +11,9 @@ TrackSensor::TrackSensor(int pin)
 	: _pin(pin), average(1)
 {
 	_pin = pin;
+}
+TrackSensor::~TrackSensor()
+{
 }
 
 

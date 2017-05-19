@@ -11,6 +11,7 @@ class TrackSensor {
 
 	public:
 		TrackSensor(int pin);
+		virtual ~TrackSensor();
 		bool result();
 
 	private:

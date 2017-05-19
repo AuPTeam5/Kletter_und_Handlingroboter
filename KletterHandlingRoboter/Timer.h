@@ -24,45 +24,45 @@ ton_Timer.q());								--> .q() output on or off if et >= pt
 #include <Arduino.h>
 
 
-class Timer
+class Timer											// base class for TON and TOF
 {
 public:
-	Timer();
-	virtual ~Timer();
+	Timer();										// constructor
+	virtual ~Timer();								// destructor
 
-	virtual void in(bool in);
-	virtual bool q();
-	virtual void pt(unsigned long pt);
-	virtual unsigned long et();
+	virtual void in(bool in);						// start public
+	virtual bool q();								// out public
+	virtual void pt(unsigned long pt);				// programmed time public
+	virtual unsigned long et();						// established time public
 
-	bool lastq = false;
-	unsigned long startzeit;
+	bool lastq = false;								// last state 
+	unsigned long startzeit;						// start time
 
 protected:
-	bool in_ = false;
-	bool q_ = false;
-	unsigned long pt_ = 0;
-	unsigned long et_ = 0;
+	bool in_ = false;								// start protected
+	bool q_ = false;								// out protected
+	unsigned long pt_ = 0;							// programmed time protected
+	unsigned long et_ = 0;							// established time protected
 };
 
 
-class TON : public Timer
+class TON : public Timer							// derived function of timer
 {
 public:
-	  TON();
-	  virtual ~TON();
+	  TON();										// constructor
+	  virtual ~TON();								// destructor
 
-	  virtual bool q();
+	  virtual bool q();								// returns state TON
 };
 
 
-class TOF : public Timer
+class TOF : public Timer							// derived function of timer
 {
 public:
-	TOF();
-	virtual ~TOF();
+	TOF();											// constructor
+	virtual ~TOF();									// destructor
 
-	virtual bool q();
+	virtual bool q();								// returns state TOF
 };
 
 #endif
