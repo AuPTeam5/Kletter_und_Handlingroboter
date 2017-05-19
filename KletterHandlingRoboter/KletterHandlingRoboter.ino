@@ -19,10 +19,10 @@
 /////////////////////////////////////////////////////////////////////
 
 // const int
-const int BaudRate = 9600;				// baud rate for serial communication
+const int BaudRate = 9600;								// baud rate for serial communication
 
 // int
-int	Sequencer = 0;						// main sequence						
+int	Sequencer = 0;										// main sequence						
 
 // enum
 enum State {							// enumeration for sequencer
@@ -58,48 +58,48 @@ void MainSequence() {
 
 	// static bool
 	static bool
-		firstCycle = true,				// flag for first cycle
-		SequencerTimerIN = false,		// input flag for SequencerTimer
-		SequencerTimerOUT = false,		// output flag for SequencerTimer
-		CenterPos = false				// flag for FrontSensor is over center mark
+		firstCycle = true,								// flag for first cycle
+		SequencerTimerIN = false,						// input flag for SequencerTimer
+		SequencerTimerOUT = false,						// output flag for SequencerTimer
+		CenterPos = false								// flag for FrontSensor is over center mark
 		;
 
 	// bool
 	bool
-		SignalSensorFront = false,
-		SignalSensorCenter = false,
-		SignalSensorBack = false
+		SignalSensorFront = false,						// flag for result track sensor fornt
+		SignalSensorCenter = false,						// flag for result track sensor center
+		SignalSensorBack = false						// flag for result track sensor back
 		;
 
 	// static long
 	static long
-		SequencerTimerPt = 0,			// programmed time for SequencerTimer
-		SequencerTimerEt = 0			// established time for SequencerTimer
+		SequencerTimerPt = 0,							// programmed time for SequencerTimer
+		SequencerTimerEt = 0							// established time for SequencerTimer
 		;
 	
 	// const int
 	const int
-		SensorFrontPin = 3,				// pin for front sensor
-		SensorCenterPin = 4,			// pin for center sensor
-		SensorBackPin = 5,				// pin for back sensor
-		IRPin = 7						// pin for IR remote
+		SensorFrontPin = 0,								// pin for front sensor
+		SensorCenterPin = 1,							// pin for center sensor
+		SensorBackPin = 2,								// pin for back sensor
+		IRPin = 7										// pin for IR remote
 		;
 
 	// const unsigned long
 	const unsigned long 
-		IRRxStart = 16761405,			// start signal (  PLAY/PAUSE button )
-		IRRxReset = 16736925,			// start signal ( CH button )
-		StartupTime = 2000,				// startuptime [ms]
-		WaitingTime = 5000,				// delay in center position [ms]
-		GripperTime = 1000,				// timer for gripper movement [ms]
-		MoveOutTime = 300,				// time to move pipe out [ms]
-		TransportPosTime = 1000,		// time to move arm in transport position [ms]
-		HalfRotTime = 500				// time to rotate arm 180° [ms]
+		IRRxStart = 16761405,							// start signal (  PLAY/PAUSE button )
+		IRRxReset = 16736925,							// start signal ( CH button )
+		StartupTime = 2000,								// startuptime [ms]
+		WaitingTime = 5000,								// delay in center position [ms]
+		GripperTime = 2000,								// timer for gripper movement [ms]
+		MoveOutTime = 3000,								// time to move pipe out [ms]
+		TransportPosTime = 3000,						// time to move arm in transport position [ms]
+		HalfRotTime = 3000								// time to rotate arm 180° [ms]
 		;
 
 	// objects
 	/////////////////////////////////////////////////////////////////////
-
+	
 	static TrackSensor SensorFront(SensorFrontPin);
 	static TrackSensor SensorCenter(SensorCenterPin);
 	static TrackSensor SensorBack(SensorBackPin);
@@ -112,27 +112,32 @@ void MainSequence() {
 	
 	if (firstCycle)
 	{
-		IRRx.enableIRIn();				// start the IR receiver
+		IRRx.enableIRIn();								// start the IR receiver
 	}
 
 	// timer
 	/////////////////////////////////////////////////////////////////////
-	SequencerTimer.in(SequencerTimerIN);
-	SequencerTimer.pt(SequencerTimerPt);
-	SequencerTimerEt = SequencerTimer.et();
-	SequencerTimerOUT = SequencerTimer.q();
+	
+	SequencerTimer.in(SequencerTimerIN);				// start timer		
+	SequencerTimer.pt(SequencerTimerPt);				// programmed time
+	SequencerTimerEt = SequencerTimer.et();				// established time
+	SequencerTimerOUT = SequencerTimer.q();				// output
 
 	// track sensors
 	/////////////////////////////////////////////////////////////////////
-	SignalSensorFront	= SensorFront.result();
-	SignalSensorCenter	= SensorCenter.result();
-	SignalSensorBack	= SensorBack.result();
+	
+	SignalSensorFront	= SensorFront.result();			// result signal front sensor
+	SignalSensorCenter	= SensorCenter.result();		// result signal center sensor
+	SignalSensorBack	= SensorBack.result();			// result signal back sensor
+	
 
 	// sequence
 	/////////////////////////////////////////////////////////////////////
 
-	switch (Sequencer) {
+	Serial.println(Sequencer);
 
+	switch (Sequencer) {
+    
 	// init
 	case start:
 		SequencerTimerPt = StartupTime;
@@ -302,7 +307,7 @@ void MainSequence() {
 		if (SequencerTimerOUT)
 		{
 			SequencerTimerIN = false;
-			Sequencer = drag_pipe_out_top;
+			Sequencer = move_to_endpos;
 		}
 		break;
 
@@ -331,7 +336,7 @@ void MainSequence() {
 		Sequencer = start;
 		break;
 	}
-	
+
 	// reset first cycle variable
 	/////////////////////////////////////////////////////////////////////
 
@@ -349,17 +354,17 @@ void Outputs(){
 
 	// const int
 	const int
-		GripperServoPin = 9,					// pin for gripper servo
-		ArmServoPin = 10,						// pin for arm servo
-		ShieldAdress = 0x60,					// motor shield adress
-		StepperResolution = 200,				// steps / u ( 360° / 1.8° per step)
-		StepperSpeed = 180,						// stepper speed [rpm]
-		ArmServoHome = 900,						// home position for arm servo
-		TransportPositionTop = 900,				// position arm for transport to top
-		ReleasePosTop = 900,					// release pos top
-		GripperServoHome = 900,					// home position for gripper servo
-		GripperServoClosed = 900,				// gripper is closed
-		PipeOutDistance = 200					// steps to move pipe out
+		GripperServoPin = 9,							// pin for gripper servo
+		ArmServoPin = 10,								// pin for arm servo
+		ShieldAdress = 0x60,							// motor shield adress
+		StepperResolution = 200,						// steps / u ( 360° / 1.8° per step)
+		StepperSpeed = 180,								// stepper speed [rpm]
+		ArmServoHome = 1573,							// home position for arm servo
+		TransportPositionTop = 1500,					// arm position for transport to top
+		ReleasePosTop = 1438,							// release position top
+		GripperServoHome = 900,							// home position for gripper servo
+		GripperServoClosed = 900,						// position gripper is closed
+		PipeOutDistance = 200							// steps to move pipe out
 		;
 
 
@@ -376,15 +381,16 @@ void Outputs(){
 
 	if (firstCycle)
 	{
-		AFMS.begin();								// start motor shield
-		GripperServo.attach(GripperServoPin);		// attach GripperServo to pin 2
-		ArmServo.attach(ArmServoPin);				// attach ArmServo to pin 3
-		Stepper->setSpeed(StepperSpeed);			// set stepper speed
-	} 
+		AFMS.begin();									// start motor shield
+		GripperServo.attach(GripperServoPin);			// attach GripperServo to pin 9
+		ArmServo.attach(ArmServoPin);					// attach ArmServo to pin 10
+		Stepper->setSpeed(StepperSpeed);				// set stepper speed
+	}	
 
 	// arm servo
 	/////////////////////////////////////////////////////////////////////
 	
+
 	if (	(Sequencer == start)
 		 ||	(Sequencer == move_arm_in_transport_pos_to_bottom))
 	{
@@ -398,7 +404,6 @@ void Outputs(){
 	{
 		ArmServo.writeMicroseconds(ReleasePosTop);
 	}
-	
 
 	// gripper servo
 	/////////////////////////////////////////////////////////////////////
@@ -447,8 +452,8 @@ void Outputs(){
 // setup
 void setup() {
 
-	Serial.begin(BaudRate);					// start serial communication
-	Sequencer = start;						// set sequence to init
+	Serial.begin(BaudRate);								// start serial communication
+	Sequencer = start;									// set sequence to init
 }
 
 // loop
@@ -457,6 +462,6 @@ void loop() {
 	// call functions
 	/////////////////////////////////////////////////////////////////////
 	
-	MainSequence();							// main controll sequence
-	Outputs();								// outputs
+	MainSequence();										// main controll sequence
+	Outputs();											// outputs
 }
