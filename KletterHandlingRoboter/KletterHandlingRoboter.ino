@@ -1,7 +1,7 @@
 ﻿/*
  Name:		KletterHandlingRoboter.ino
  Created:	14.01.2017 08:37:39
- Author:	Florian Steiger, Kushtrim Thaqi, Matthias Stieger
+ Author:	AüP Team 5
 */
 
 // libary
@@ -138,7 +138,7 @@ void MainSequence() {
 
 	switch (Sequencer) {
     
-	// init
+	// init robot
 	case start:
 		SequencerTimerPt = StartupTime;
 		SequencerTimerIN = true;
@@ -156,7 +156,7 @@ void MainSequence() {
 		}
 		break;
 
-	// move to pipe bottom position
+	// move to pipe bottom 
 	case move_to_pipe_bottom:
 		if (SignalSensorBack)
 		{
@@ -164,7 +164,7 @@ void MainSequence() {
 		}
 		break;
 
-	// close gripper bottom pos
+	// close gripper bottom position
 	case grip_pipe_bottom:
 		SequencerTimerPt = GripperTime;
 		SequencerTimerIN = true;
@@ -175,7 +175,7 @@ void MainSequence() {
 		}
 		break;
 		
-	// move pipe out bottom
+	// drag pipe out bottom
 	case drag_pipe_out_bottom:
 		SequencerTimerPt = MoveOutTime;
 		SequencerTimerIN = true;
@@ -259,7 +259,7 @@ void MainSequence() {
 		}
 		break;
 
-	// close gripper on top pos
+	// close gripper on top position
 	case grip_pipe_top:
 		SequencerTimerPt = GripperTime;
 		SequencerTimerIN = true;
@@ -281,7 +281,7 @@ void MainSequence() {
 		}
 		break;
 
-	// move arm in transport pposition to bottom
+	// move arm in transport position to bottom
 	case move_arm_in_transport_pos_to_bottom:
 		SequencerTimerPt = HalfRotTime;
 		SequencerTimerIN = true;
@@ -350,7 +350,7 @@ void Outputs(){
 	/////////////////////////////////////////////////////////////////////
 
 	// static bool
-	static bool firstCycle = true;
+	static bool firstCycle = true;						// flag for first cycle
 
 	// const int
 	const int
@@ -390,16 +390,18 @@ void Outputs(){
 	// arm servo
 	/////////////////////////////////////////////////////////////////////
 	
-
+	// move arm servo in home position
 	if (	(Sequencer == start)
 		 ||	(Sequencer == move_arm_in_transport_pos_to_bottom))
 	{
-		ArmServo.writeMicroseconds(ArmServoHome);
+		ArmServo.writeMicroseconds(ArmServoHome);		
 	}
+	// move arm servo in transportposition
 	if ((Sequencer == move_arm_in_transport_pos_to_top))
 	{
 		ArmServo.writeMicroseconds(TransportPositionTop);
 	}
+	//move arm servo in release position top
 	if ((Sequencer == move_arm_to_release_pos_top))
 	{
 		ArmServo.writeMicroseconds(ReleasePosTop);
@@ -408,12 +410,14 @@ void Outputs(){
 	// gripper servo
 	/////////////////////////////////////////////////////////////////////
 	
+	// move gripper in home position (opend)
 	if (	(Sequencer == start)
 		 ||	(Sequencer == release_pipe_top)
 		 || (Sequencer == release_pipe_bottom))
 	{
 		GripperServo.writeMicroseconds(GripperServoHome);
 	}
+	// close gripper
 	if (	(Sequencer == grip_pipe_bottom)
 		 ||	(Sequencer == grip_pipe_top))
 	{
@@ -424,6 +428,7 @@ void Outputs(){
 	// stepper
 	/////////////////////////////////////////////////////////////////////
 
+	// one step forward
 	if (	((Sequencer == start) && firstCycle)
 		 ||	(Sequencer == move_to_top)
 		 || (Sequencer == move_to_pipe_top)
@@ -431,12 +436,14 @@ void Outputs(){
 	{
 		Stepper->onestep(FORWARD, DOUBLE);
 	}
+	// one step backward
 	if (	(Sequencer == move_to_pipe_bottom)
 		 ||	(Sequencer == move_to_center)
 		 || (Sequencer == move_to_bottom))
 	{
 		Stepper->onestep(BACKWARD, DOUBLE);
 	}
+	// x steps forward to move pipe out of holder
 	if (	(Sequencer == drag_pipe_out_bottom)
 		 ||	(Sequencer == drag_pipe_out_top))
 	{
@@ -446,14 +453,14 @@ void Outputs(){
 	// reset first cycle variable
 	/////////////////////////////////////////////////////////////////////
 
-	firstCycle = false;
+	firstCycle = false;						
 }
 
 // setup
 void setup() {
 
 	Serial.begin(BaudRate);								// start serial communication
-	Sequencer = start;									// set sequence to init
+	Sequencer = start;									// set sequence to start
 }
 
 // loop
@@ -462,6 +469,6 @@ void loop() {
 	// call functions
 	/////////////////////////////////////////////////////////////////////
 	
-	MainSequence();										// main controll sequence
-	Outputs();											// outputs
+	MainSequence();										// call main controll sequence
+	Outputs();											// call outputs
 }
