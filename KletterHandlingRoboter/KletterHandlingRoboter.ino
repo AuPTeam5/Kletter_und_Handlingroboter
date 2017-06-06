@@ -11,6 +11,8 @@
 #include <Servo.h>
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
+#include <AccelStepper.h>
+#include <Wire.h>
 #include "TrackSensor.h"
 #include "Timer.h"
 
@@ -25,7 +27,7 @@ const int BaudRate = 9600;								// baud rate for serial communication
 int	Sequencer = 0;										// main sequence						
 
 // enum
-enum State {							// enumeration for sequencer
+enum State {											// enumeration for sequencer
 	start,
 	move_to_pipe_bottom,
 	grip_pipe_bottom,
@@ -46,9 +48,28 @@ enum State {							// enumeration for sequencer
 	end
 };					
 
+// objects
+/////////////////////////////////////////////////////////////////////
+
+Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x60);
+Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
+Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
+AccelStepper drive1(forwardstep1, backwardstep1);
 
 // functions
 /////////////////////////////////////////////////////////////////////
+
+// stepper controll
+void forwardstep1()
+{
+	Stepper1->onestep(FORWARD, DOUBLE);
+	Stepper2->onestep(FORWARD, DOUBLE);
+}
+void backwardstep1()
+{
+	Stepper1->onestep(BACKWARD, DOUBLE);
+	Stepper2->onestep(BACKWARD, DOUBLE);
+}
 
 // main sequencer
 void MainSequence() {
@@ -356,9 +377,6 @@ void Outputs(){
 	const int
 		GripperServoPin = 9,							// pin for gripper servo
 		ArmServoPin = 10,								// pin for arm servo
-		ShieldAdress = 0x60,							// motor shield adress
-		StepperResolution = 200,						// steps / u ( 360° / 1.8° per step)
-		StepperSpeed = 180,								// stepper speed [rpm]
 		ArmServoHome = 1573,							// home position for arm servo
 		TransportPositionTop = 1500,					// arm position for transport to top
 		ReleasePosTop = 1438,							// release position top
@@ -371,8 +389,7 @@ void Outputs(){
 	// objects
 	/////////////////////////////////////////////////////////////////////
 
-	static Adafruit_MotorShield AFMS = Adafruit_MotorShield(ShieldAdress);
-	static Adafruit_StepperMotor *Stepper = AFMS.getStepper(StepperResolution, 1);
+
 	static Servo GripperServo;
 	static Servo ArmServo;
 
@@ -384,7 +401,8 @@ void Outputs(){
 		AFMS.begin();									// start motor shield
 		GripperServo.attach(GripperServoPin);			// attach GripperServo to pin 9
 		ArmServo.attach(ArmServoPin);					// attach ArmServo to pin 10
-		Stepper->setSpeed(StepperSpeed);				// set stepper speed
+		drive1.setMaxSpeed(100.0);
+		drive1.setAcceleration(100.0);
 	}	
 
 	// arm servo
@@ -428,26 +446,27 @@ void Outputs(){
 	// stepper
 	/////////////////////////////////////////////////////////////////////
 
-	// one step forward
+	// move forward
+
 	if (	((Sequencer == start) && firstCycle)
 		 ||	(Sequencer == move_to_top)
 		 || (Sequencer == move_to_pipe_top)
-		 || (Sequencer == move_to_endpos))
+		 || (Sequencer == move_to_endpos)
+		 || (Sequencer == drag_pipe_out_bottom)
+		 || (Sequencer == drag_pipe_out_top))
 	{
-		Stepper->onestep(FORWARD, DOUBLE);
+		drive1.setAcceleration(200);
+		drive1.setSpeed(-50);
+		drive1.runSpeed();
 	}
-	// one step backward
+	// move backward
 	if (	(Sequencer == move_to_pipe_bottom)
 		 ||	(Sequencer == move_to_center)
 		 || (Sequencer == move_to_bottom))
 	{
-		Stepper->onestep(BACKWARD, DOUBLE);
-	}
-	// x steps forward to move pipe out of holder
-	if (	(Sequencer == drag_pipe_out_bottom)
-		 ||	(Sequencer == drag_pipe_out_top))
-	{
-		Stepper->step(PipeOutDistance, FORWARD, DOUBLE);
+		drive1.setAcceleration(200);
+		drive1.setSpeed(50);
+		drive1.runSpeed();
 	}
 
 	// reset first cycle variable
