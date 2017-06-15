@@ -51,9 +51,9 @@ enum State {											// enumeration for sequencer
 // objects
 /////////////////////////////////////////////////////////////////////
 
-Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x60);
-Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
-Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
+Adafruit_MotorShield AFMS1 = Adafruit_MotorShield(0x60);
+Adafruit_StepperMotor *StepperA1 = AFMS1.getStepper(200, 1);
+Adafruit_StepperMotor *StepperA2 = AFMS1.getStepper(200, 2);
 AccelStepper drive1(forwardstep1, backwardstep1);
 
 // functions
@@ -62,13 +62,13 @@ AccelStepper drive1(forwardstep1, backwardstep1);
 // stepper controll
 void forwardstep1()
 {
-	Stepper1->onestep(FORWARD, DOUBLE);
-	Stepper2->onestep(FORWARD, DOUBLE);
+	StepperA1->onestep(FORWARD, DOUBLE);
+	StepperA2->onestep(FORWARD, DOUBLE);
 }
 void backwardstep1()
 {
-	Stepper1->onestep(BACKWARD, DOUBLE);
-	Stepper2->onestep(BACKWARD, DOUBLE);
+	StepperA1->onestep(BACKWARD, DOUBLE);
+	StepperA2->onestep(BACKWARD, DOUBLE);
 }
 
 // main sequencer
@@ -398,7 +398,7 @@ void Outputs(){
 
 	if (firstCycle)
 	{
-		AFMS.begin();									// start motor shield
+		AFMS1.begin();									// start motor shield
 		GripperServo.attach(GripperServoPin);			// attach GripperServo to pin 9
 		ArmServo.attach(ArmServoPin);					// attach ArmServo to pin 10
 		drive1.setMaxSpeed(100.0);
