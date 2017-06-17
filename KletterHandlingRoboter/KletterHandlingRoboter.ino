@@ -100,10 +100,10 @@ void MainSequence() {
 	
 	// const int
 	const int
-		SensorFrontPin = 0,								// pin for front sensor
-		SensorCenterPin = 1,							// pin for center sensor
-		SensorBackPin = 2,								// pin for back sensor
-		IRPin = 7										// pin for IR remote
+		SensorFrontPin = 7,								// pin for front sensor
+		SensorCenterPin = 8,							// pin for center sensor
+		SensorBackPin = 9,								// pin for back sensor
+		IRPin = 22										// pin for IR remote
 		;
 
 	// const unsigned long
@@ -379,8 +379,8 @@ void Outputs(){
 		ArmServoPin = 10,								// pin for arm servo
 		ArmServoHome = 1573,							// home position for arm servo
 		TransportPositionTop = 1500,					// arm position for transport to top
-		ReleasePosTop = 1438,							// release position top
-		GripperServoHome = 900,							// home position for gripper servo
+		ReleasePosTop = 1430,							// release position top
+		GripperServoHome = 1150,							// home position for gripper servo
 		GripperServoClosed = 900,						// position gripper is closed
 		PipeOutDistance = 200							// steps to move pipe out
 		;
@@ -401,7 +401,7 @@ void Outputs(){
 		AFMS1.begin();									// start motor shield
 		GripperServo.attach(GripperServoPin);			// attach GripperServo to pin 9
 		ArmServo.attach(ArmServoPin);					// attach ArmServo to pin 10
-		drive1.setMaxSpeed(100.0);
+		drive1.setMaxSpeed(300.0);
 		drive1.setAcceleration(100.0);
 	}	
 
@@ -456,7 +456,7 @@ void Outputs(){
 		 || (Sequencer == drag_pipe_out_top))
 	{
 		drive1.setAcceleration(200);
-		drive1.setSpeed(-50);
+		drive1.setSpeed(-300);
 		drive1.runSpeed();
 	}
 	// move backward
@@ -465,7 +465,7 @@ void Outputs(){
 		 || (Sequencer == move_to_bottom))
 	{
 		drive1.setAcceleration(200);
-		drive1.setSpeed(50);
+		drive1.setSpeed(300);
 		drive1.runSpeed();
 	}
 
