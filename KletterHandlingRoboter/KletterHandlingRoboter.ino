@@ -83,7 +83,7 @@ void MainSequence() {
 		SequencerTimerIN = false,						// input flag for SequencerTimer
 		SequencerTimerOUT = false,						// output flag for SequencerTimer
 		CenterPos = false,								// flag for FrontSensor is over center mark
-		TopPos = false
+		TopPos = false									// flag for top position
 		;
 
 	// bool
@@ -115,8 +115,11 @@ void MainSequence() {
 		WaitingTime = 5000,								// delay in center position [ms]
 		GripperTime = 200,								// timer for gripper movement [ms]
 		MoveOutTime = 2500,								// time to move pipe out [ms]
-		TransportPosTime = 2000,						// time to move arm in transport position [ms]
-		HalfRotTime = 2000								// time to rotate arm 180° [ms]
+		TransportPosTime = 500,							// time to move arm in transport position [ms]
+		HalfRotTime = 2000,								// time to rotate arm 180° [ms]
+		AdjustmentValuePipeBottom = 200,				// time to adjust sensor position back [ms]
+		AdjustmentValueTopPos = 1500,					// time to adjust sensor position front [ms]
+		AdjustmentValueDragTop = 200					// time to adjust sensor position front [ms]
 		;
 
 	// objects
@@ -180,7 +183,7 @@ void MainSequence() {
 
 	// move to pipe bottom 
 	case move_to_pipe_bottom:
-		SequencerTimerPt = (200);
+		SequencerTimerPt = (AdjustmentValuePipeBottom);
 		SequencerTimerIN = SignalSensorBack;
 		if (SequencerTimerOUT)
 		{
@@ -213,13 +216,7 @@ void MainSequence() {
 
 	// pepare arm for move to top
 	case move_arm_in_transport_pos_to_top:
-		SequencerTimerPt = 2;
-		SequencerTimerIN = true;
-		if (SequencerTimerOUT)
-		{
-			SequencerTimerIN = false;
 			Sequencer = move_to_top;
-		}
 		break;
 
 	// move to top position
@@ -233,7 +230,7 @@ void MainSequence() {
 			TopPos = true;
 			CenterPos = false;
 		}
-		SequencerTimerPt = 1500;
+		SequencerTimerPt = AdjustmentValueTopPos;
 		SequencerTimerIN = TopPos;
 		if (SequencerTimerOUT)
 		{
@@ -290,7 +287,7 @@ void MainSequence() {
 		{
 			TopPos = true;
 		}
-		SequencerTimerPt = (200);
+		SequencerTimerPt = AdjustmentValueDragTop;
 		SequencerTimerIN = TopPos;
 		if (SequencerTimerOUT)
 		{
@@ -324,7 +321,7 @@ void MainSequence() {
 
 	// move arm in transport position to bottom
 	case move_arm_in_transport_pos_to_bottom:
-		SequencerTimerPt = 500;
+		SequencerTimerPt = TransportPosTime;
 		SequencerTimerIN = true;
 		if (SequencerTimerOUT)
 		{
@@ -405,9 +402,8 @@ void Outputs(){
 		ArmServoHome = 1573,							// home position for arm servo
 		TransportPositionTop = 1500,					// arm position for transport to top
 		ReleasePosTop = 1430,							// release position top
-		GripperServoHome = 1150,							// home position for gripper servo
-		GripperServoClosed = 900,						// position gripper is closed
-		PipeOutDistance = 200							// steps to move pipe out
+		GripperServoHome = 1150,						// home position for gripper servo
+		GripperServoClosed = 900						// position gripper is closed
 		;
 
 
@@ -426,8 +422,8 @@ void Outputs(){
 		AFMS1.begin();									// start motor shield
 		GripperServo.attach(GripperServoPin);			// attach GripperServo to pin 9
 		ArmServo.attach(ArmServoPin);					// attach ArmServo to pin 10
-		drive1.setMaxSpeed(1000.0);
-		drive1.setAcceleration(100.0);
+		drive1.setMaxSpeed(500.0);						// set maximal speed
+		drive1.setAcceleration(100.0);					// set acceleraton
 	}	
 
 	// arm servo
@@ -481,7 +477,7 @@ void Outputs(){
 		 || (Sequencer == drag_pipe_out_top))
 	{
 		drive1.setAcceleration(300);
-		drive1.setSpeed(-1000);
+		drive1.setSpeed(-400);
 		drive1.runSpeed();
 	}
 	// move backward
@@ -490,7 +486,7 @@ void Outputs(){
 		 || (Sequencer == move_to_bottom))
 	{
 		drive1.setAcceleration(300);
-		drive1.setSpeed(1000);
+		drive1.setSpeed(400);
 		drive1.runSpeed();
 	}
 
